@@ -1,0 +1,7 @@
+[package]
+name = "AghTidy"
+version = "0.1.0"
+authors = ["pchrom"]
+
+[dependencies]
+regex = "0.2"
