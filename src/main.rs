@@ -35,10 +35,10 @@ fn main() {
 
         let trim_unnecessary_word = Regex::new(r"Sala:\s?").unwrap();
         let trim_teacher = Regex::new(r"Prowadzący: (?:mgr |inż. |prof. |dr |hab. )*(.*?)").unwrap();
-        let reformat_location = Regex::new(r"(?P<letter>[a-zA-Z])-(?P<num>\d{1,2}) - s. (?P<class_num>\d{1,3}\w?)").unwrap();
+        let reformat_location = Regex::new(r"(?P<building>[a-zA-Z]-\d{1,2}) - s. (?P<class_num>\d{1,3}\w?)").unwrap();
 
         let clean = trim_teacher.replace_all(&content, "");
-        let clean2 = reformat_location.replace_all(&clean, "$letter-$num $class_num");
+        let clean2 = reformat_location.replace_all(&clean, "$building $class_num");
         let clean3 = trim_unnecessary_word.replace_all(&clean2, "");
 
         let new_path = Path::new("plan_zajec_plus.ics");
