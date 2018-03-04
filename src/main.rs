@@ -7,8 +7,8 @@ use std::path::Path;
 use regex::Regex;
 
 fn main() {
-    if let Some(args1) = env::args().nth(1) {
-        println!("The first argument is {}", &args1);
+    if let Some(first_arg) = env::args().nth(1) {
+        println!("The first argument is {}", &first_arg);
         let dict = [
             ("Zaawansowane techniki internetowe", "ZTI"),
             ("Techniki mikroprocesorowe", "Mikroprocesory"),
@@ -18,7 +18,7 @@ fn main() {
             ("Fizykochemia procesów", "Fizykochemia"),
             ("Fizyka III", "Fizyka")
         ];
-        let path = Path::new(&args1);
+        let path = Path::new(&first_arg);
         let mut file = match File::open(&path){
             Err(why) => panic!("couldn't open {}: {}", path.display(), why.description()),
             Ok(file) => file,
@@ -42,12 +42,17 @@ fn main() {
         .map(|text| reformat_location.replace_all(&text, "$building $class_num").into_owned())
         .map(|text| trim_unnecessary_word.replace_all(&text, "").into_owned());
 
+        let formatted_content = match formatted {
+            Some(ctn) => ctn,
+            None => panic!("file formatting failed"),
+        };
+
         let new_path = Path::new("plan_zajec_plus.ics");
         let mut new_file = match File::create(&new_path){
             Err(why) => panic!("couldn't create output file {} {}", new_path.display(), why.description()),
             Ok(created_file) => created_file,
         };
-        match new_file.write_all(formatted.unwrap().as_bytes()) {
+        match new_file.write_all(formatted_content.as_bytes()) {
         Err(why) => {
             panic!("couldn't write: {}", why.description())
         },
