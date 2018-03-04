@@ -37,16 +37,17 @@ fn main() {
         let trim_teacher = Regex::new(r"Prowadzący: (?:mgr |inż. |prof. |dr |hab. )*(.*?)").unwrap();
         let reformat_location = Regex::new(r"(?P<building>[a-zA-Z]-\d{1,2}) - s. (?P<class_num>\d{1,3}\w?)").unwrap();
 
-        let clean = trim_teacher.replace_all(&content, "");
-        let clean2 = reformat_location.replace_all(&clean, "$building $class_num");
-        let clean3 = trim_unnecessary_word.replace_all(&clean2, "");
+        let formatted = Some(content)
+        .map(|text| trim_teacher.replace_all(&text, "").into_owned())
+        .map(|text| reformat_location.replace_all(&text, "$building $class_num").into_owned())
+        .map(|text| trim_unnecessary_word.replace_all(&text, "").into_owned());
 
         let new_path = Path::new("plan_zajec_plus.ics");
         let mut new_file = match File::create(&new_path){
             Err(why) => panic!("couldn't create output file {} {}", new_path.display(), why.description()),
             Ok(created_file) => created_file,
         };
-        match new_file.write_all(clean3.as_bytes()) {
+        match new_file.write_all(formatted.unwrap().as_bytes()) {
         Err(why) => {
             panic!("couldn't write: {}", why.description())
         },
