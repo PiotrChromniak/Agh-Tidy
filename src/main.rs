@@ -1,5 +1,4 @@
 extern crate regex;
-use std::error::Error;
 use std::env;
 use std::fs::File;
 use std::io::prelude::*;
@@ -8,7 +7,7 @@ use regex::Regex;
 
 fn main() {
     if let Some(first_arg) = env::args().nth(1) {
-        println!("The first argument is {}", &first_arg);
+        println!("input file: {}", &first_arg);
         let dict = [
             ("Zaawansowane techniki internetowe", "ZTI"),
             ("Techniki mikroprocesorowe", "Mikroprocesory"),
@@ -19,15 +18,9 @@ fn main() {
             ("Fizyka III", "Fizyka")
         ];
         let path = Path::new(&first_arg);
-        let mut file = match File::open(&path){
-            Err(why) => panic!("couldn't open {}: {}", path.display(), why.description()),
-            Ok(file) => file,
-        };
+        let mut file = File::open(&path).expect("couldn't open imput file");
         let mut content = String::new();
-        match file.read_to_string(&mut content) {
-            Err(why) => panic!("couldn't read {}: {}", path.display(), why.description()),
-            Ok(_) => println!("succesfully read content"),
-        };
+        file.read_to_string(&mut content).expect("couldn't read from input file");
 
         for &(key, rep) in dict.into_iter() {
             content = content.replace(key, rep);
@@ -42,22 +35,13 @@ fn main() {
         .map(|text| reformat_location.replace_all(&text, "$building $class_num").into_owned())
         .map(|text| trim_unnecessary_word.replace_all(&text, "").into_owned());
 
-        let formatted_content = match formatted {
-            Some(ctn) => ctn,
-            None => panic!("file formatting failed"),
-        };
+        let formatted_content = formatted.expect("file formatting failed");
 
         let new_path = Path::new("plan_zajec_plus.ics");
-        let mut new_file = match File::create(&new_path){
-            Err(why) => panic!("couldn't create output file {} {}", new_path.display(), why.description()),
-            Ok(created_file) => created_file,
-        };
-        match new_file.write_all(formatted_content.as_bytes()) {
-        Err(why) => {
-            panic!("couldn't write: {}", why.description())
-        },
-        Ok(_) => println!("successfully wrote to" ),
-    }
+        let mut new_file = File::create(&new_path).expect("couldn't create output file");
+        new_file.write_all(formatted_content.as_bytes())
+        .expect("couldn't write to output file");
+        
         println!("File succesfuly reformated");
     } else {
         println!("No file specificated");
